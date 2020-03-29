@@ -25,7 +25,7 @@ def train(images, labels, client, server, clientID):
     
     criterion = nn.NLLLoss()
     loss = criterion(pred, labels)
-
+    
     loss.backward()
 
     grad_in = server.backward()
@@ -84,11 +84,11 @@ if __name__ == '__main__':
         processes = []
         #here, I ignore even data split and data completeness. 
         #Just want to achieve multi-processing first
-        #Each process is assigned to 1 GPU, and the spawn-join is carried out
+        #Each process is assigned to 1 GPU, and the start-join is carried out
         #after each step
         for client_i, (images, labels) in enumerate(trainloaders[0]):
             print(client_i)
-            client_i %= 4
+            client_i %= ttlClients
             if client_i == 0 and processes:
                 for p_i in range(len(processes)):
                     processes[p_i].start()
@@ -110,6 +110,10 @@ if __name__ == '__main__':
         
         #express bitter happiness for ending one epoch
         print('hahaha')
+        #test
+        if epoch%2 == 0:
+            curr_acc = test(testloaders[0], 0, clients, servers, "Test set")
+            print(curr_acc)
             
         #average the weights after every epoch
         client_weights = []
@@ -134,11 +138,6 @@ if __name__ == '__main__':
         for client_i in range(ttlClients):
             clients[client_i].getModel().load_state_dict(global_client_weights)
             servers[client_i].getModel().load_state_dict(global_server_weights)
-        
-        #test
-        if epoch%2 == 0:
-            curr_acc = test(testloaders[0], 0, clients, servers, "Test set")
-            print(curr_acc)
     
     #final test
     overall_acc = 0

@@ -50,7 +50,6 @@ class Server():
     def eval(self):
         self.model.eval()
         
-    def adjust_learning_rate(self, epoch):
-        lr = 0.1 * (0.5 ** (epoch // 10))
-        for param_group in self.opt.param_groups:
-            param_group['lr'] = lr
+    def toGpu(self):
+        gpu = torch.device("cuda:"+str(self.ID))
+        self.model.to(gpu)
